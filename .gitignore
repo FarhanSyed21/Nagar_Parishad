@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# frontend
+frontend/node_modules/
+
+# backend
+backend/node_modules/
+
+# build folders
+dist/
+build/
+
+# environment variables
+.env
+
+# vite cache
+.vite
+
+# logs
+*.log
+
+# editor files
+.vscode/
+.DS_Store
