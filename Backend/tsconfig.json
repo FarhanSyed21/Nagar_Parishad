@@ -49,7 +49,7 @@
     "target": "ES6",
     "module": "CommonJS",
     "rootDir": "./src",
-    "outDir": "src/dist",
+    "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true
