@@ -80,6 +80,7 @@ export default function MainLayout({ children }: any) {
           style={{ flex: 1 }}
         />
 
+
         <div style={{ color:"white" }}>
 
           Welcome {user.name}

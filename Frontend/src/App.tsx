@@ -5,6 +5,9 @@ import Users from "./Pages/Users";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Contractors from "./Pages/Contractors";
 import Banks from "./Pages/Banks";
+import PaymentCredit from "./Pages/PaymentCredit";
+import PaymentDebit from "./Pages/PaymentDebit";
+import MainLayout from "./Layout/MainLayout";
 
 function App() {
 
@@ -47,6 +50,26 @@ function App() {
           element={
             <ProtectedRoute>
               <Banks />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-credit"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <PaymentCredit />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-debit"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <PaymentDebit />
+              </MainLayout>
             </ProtectedRoute>
           }
         />

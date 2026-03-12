@@ -4,6 +4,7 @@ import AuthRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import contractorRoutes from "./routes/contractorRoutes";
 import bankRoutes from "./routes/bankRoutes";
+import TransactionRoutes from "./routes/TransactionRoutes";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use("/api/auth", AuthRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contractors", contractorRoutes);
 app.use("/api/banks", bankRoutes);
+app.use("/api/transactions", TransactionRoutes);
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
