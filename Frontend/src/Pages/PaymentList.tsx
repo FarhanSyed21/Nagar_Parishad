@@ -1,6 +1,8 @@
-import { Table, Card, Select, Input, Row, Col, Button } from "antd";
+import { Table, Card, Select, Input, Row, Col, Button, Form, Modal } from "antd";
 import { useEffect, useState } from "react";
 import api from "../Services/Api";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const { Option } = Select;
 
@@ -8,17 +10,20 @@ export default function PaymentList() {
 
   const [data, setData] = useState([]);
   const [type, setType] = useState("");
-  const [minAmount, setMinAmount] = useState("");
-  const [maxAmount, setMaxAmount] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const [fromDate,setFromDate] = useState("");
+  const [toDate,setToDate] = useState("");
+
+  const [open,setOpen] = useState(false);
+const [editRecord,setEditRecord] = useState<any>(null);
+
+  const [form] = Form.useForm();
 
   const fetchTransactions = async () => {
 
     const res = await api.get("/transactions", {
-      params: {
-        type,
-        minAmount,
-        maxAmount
-      }
+      params: { type, amount, fromDate, toDate }
     });
 
     setData(res.data);
@@ -26,30 +31,101 @@ export default function PaymentList() {
   };
 
   useEffect(() => {
+    fetchTransactions();
+  }, []);
 
+  const handleEdit = (record:any) => {
+
+    console.log("Edit record", record);
+
+    // next step we will open edit modal here
+
+    setEditRecord(record);
+
+    form.setFieldsValue({
+        transaction_date: dayjs(record.transaction_date),
+        amount: record.amount,
+        particular: record.particular,
+        remark: record.remark
+    });
+
+    setOpen(true);
+
+  };
+
+
+  const handleUpdate = async ()=>{
+
+    const values = await form.validateFields();
+
+    await api.put(`/transactions/${editRecord.id}`,{
+        ...values,
+        transaction_date: values.transaction_date.format("YYYY-MM-DD")
+    });
+
+    setOpen(false);
     fetchTransactions();
 
-  }, []);
+    };
 
   const columns = [
 
-    { title: "ID", dataIndex: "id" },
+    {
+      title: "ID",
+      dataIndex: "id"
+    },
 
-    { title: "Bank", dataIndex: "bank_name" },
+    {
+      title: "Transaction From",
+      dataIndex: "bank_name"
+    },
 
-    { title: "Contractor", dataIndex: "contractor_name" },
+    {
+      title: "Transaction To",
+      dataIndex: "transaction_type"
+    },
 
-    { title: "Date", dataIndex: "transaction_date" },
+    {
+      title: "Contractor",
+      dataIndex: "contractor_name"
+    },
 
-    { title: "Type", dataIndex: "transaction_type" },
+    {
+      title: "Transaction Date",
+      dataIndex: "transaction_date",
+      render: (date: string) =>
+        new Date(date).toLocaleDateString("en-IN")
+    },
 
-    { title: "Amount", dataIndex: "amount" },
 
-    { title: "Account", dataIndex: "account_type" },
+    {
+      title: "Transaction Amount",
+      dataIndex: "amount"
+    },
 
-    { title: "Particular", dataIndex: "particular" },
+    {
+      title: "Transaction Type",
+      dataIndex: "account_type"
+    },
 
-    { title: "Remark", dataIndex: "remark" }
+    // {
+    //   title: "Particular",
+    //   dataIndex: "particular"
+    // },
+
+    {
+      title: "Remark",
+      dataIndex: "remark"
+    },
+
+    {
+      title: "Action",
+      render: (_:any, record:any) => (
+        <Button type="primary" onClick={()=>handleEdit(record)}>
+          Edit
+        </Button>
+      )
+    }
 
   ];
 
@@ -62,7 +138,7 @@ export default function PaymentList() {
         <Col span={6}>
           <Select
             placeholder="Transaction Type"
-            style={{ width: "100%" }}
+            style={{ width:"100%" }}
             onChange={(value)=>setType(value)}
             allowClear
           >
@@ -72,22 +148,35 @@ export default function PaymentList() {
         </Col>
 
         <Col span={6}>
-          <Input
-            placeholder="Min Amount"
-            onChange={(e)=>setMinAmount(e.target.value)}
-          />
+            <DatePicker
+                placeholder="From Date"
+                style={{width:"100%"}}
+                onChange={(date)=>
+                setFromDate(date ? dayjs(date).format("YYYY-MM-DD") : "")
+                }
+            />
+        </Col>
+
+        <Col span={6}>
+            <DatePicker
+                placeholder="To Date"
+                style={{width:"100%"}}
+                onChange={(date)=>
+                setToDate(date ? dayjs(date).format("YYYY-MM-DD") : "")
+                }
+            />
         </Col>
 
         <Col span={6}>
           <Input
-            placeholder="Max Amount"
-            onChange={(e)=>setMaxAmount(e.target.value)}
+            placeholder="Amount"
+            onChange={(e)=>setAmount(e.target.value)}
           />
         </Col>
 
         <Col span={6}>
           <Button type="primary" onClick={fetchTransactions}>
-            Apply Filters
+            Apply Filter
           </Button>
         </Col>
 
@@ -98,6 +187,35 @@ export default function PaymentList() {
         columns={columns}
         dataSource={data}
       />
+
+      <Modal
+        open={open}
+        title="Edit Transaction"
+        onOk={handleUpdate}
+        onCancel={()=>setOpen(false)}
+        >
+
+        <Form form={form} layout="vertical">
+
+        <Form.Item name="transaction_date" label="Date">
+        <DatePicker style={{width:"100%"}}/>
+        </Form.Item>
+
+        <Form.Item name="amount" label="Amount">
+        <Input/>
+        </Form.Item>
+
+        <Form.Item name="particular" label="Particular">
+        <Input/>
+        </Form.Item>
+
+        <Form.Item name="remark" label="Remark">
+        <Input/>
+        </Form.Item>
+
+        </Form>
+
+        </Modal>
 
     </Card>
 

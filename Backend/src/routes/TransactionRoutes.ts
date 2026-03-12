@@ -46,7 +46,7 @@ router.get("/", async (req, res) => {
 
   try {
 
-    const { type, minAmount, maxAmount } = req.query;
+    const { type, amount, fromDate, toDate } = req.query;
 
     let query = `
       SELECT 
@@ -72,21 +72,63 @@ router.get("/", async (req, res) => {
       query += ` AND t.transaction_type = $${params.length}`;
     }
 
-    if (minAmount) {
-      params.push(minAmount);
-      query += ` AND t.amount >= $${params.length}`;
+    if (amount) {
+      params.push(amount);
+      query += ` AND t.amount = $${params.length}`;
     }
 
-    if (maxAmount) {
-      params.push(maxAmount);
-      query += ` AND t.amount <= $${params.length}`;
+    if (fromDate) {
+      params.push(fromDate);
+      query += ` AND t.transaction_date >= $${params.length}`;
     }
 
-    query += ` ORDER BY t.id DESC`;
+    if (toDate) {
+      params.push(toDate);
+      query += ` AND t.transaction_date <= $${params.length}`;
+    }
+
+    query += ` ORDER BY t.id ASC`;
 
     const result = await pool.query(query, params);
 
     res.json(result.rows);
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+
+  }
+
+});
+
+router.put("/:id", async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const {
+      transaction_date,
+      amount,
+      particular,
+      remark
+    } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE transactions
+      SET transaction_date=$1,
+          amount=$2,
+          particular=$3,
+          remark=$4
+      WHERE id=$5
+      RETURNING *
+      `,
+      [transaction_date, amount, particular, remark, id]
+    );
+
+    res.json(result.rows[0]);
 
   } catch (error) {
 
