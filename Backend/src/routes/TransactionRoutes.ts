@@ -46,7 +46,9 @@ router.get("/", async (req, res) => {
 
   try {
 
-    const result = await pool.query(`
+    const { type, minAmount, maxAmount } = req.query;
+
+    let query = `
       SELECT 
         t.id,
         t.transaction_date,
@@ -60,8 +62,29 @@ router.get("/", async (req, res) => {
       FROM transactions t
       LEFT JOIN banks b ON t.bank_id = b.id
       LEFT JOIN contractors c ON t.contractor_id = c.id
-      ORDER BY t.id DESC
-    `);
+      WHERE 1=1
+    `;
+
+    const params:any[] = [];
+
+    if (type) {
+      params.push(type);
+      query += ` AND t.transaction_type = $${params.length}`;
+    }
+
+    if (minAmount) {
+      params.push(minAmount);
+      query += ` AND t.amount >= $${params.length}`;
+    }
+
+    if (maxAmount) {
+      params.push(maxAmount);
+      query += ` AND t.amount <= $${params.length}`;
+    }
+
+    query += ` ORDER BY t.id DESC`;
+
+    const result = await pool.query(query, params);
 
     res.json(result.rows);
 
