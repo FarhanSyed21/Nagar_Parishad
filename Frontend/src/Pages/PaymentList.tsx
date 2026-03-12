@@ -1,12 +1,15 @@
-import { Table, Card, Select, Input, Row, Col, Button, Form, Modal } from "antd";
+import { Table, Card, Select, Input, Row, Col, Button, Form, Modal, Popconfirm } from "antd";
 import { useEffect, useState } from "react";
 import api from "../Services/Api";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import { useLocation } from "react-router-dom";
 
 const { Option } = Select;
 
+
 export default function PaymentList() {
+  const location = useLocation();
 
   const [data, setData] = useState([]);
   const [type, setType] = useState("");
@@ -18,21 +21,39 @@ export default function PaymentList() {
   const [open,setOpen] = useState(false);
 const [editRecord,setEditRecord] = useState<any>(null);
 
+  const [banks,setBanks] = useState([]);
+const [contractors,setContractors] = useState([]);
+
+const [bankId,setBankId] = useState("");
+const [contractorId,setContractorId] = useState("");
+
   const [form] = Form.useForm();
 
   const fetchTransactions = async () => {
 
     const res = await api.get("/transactions", {
-      params: { type, amount, fromDate, toDate }
+      params: { type, amount, fromDate, toDate, bankId, contractorId }
     });
 
     setData(res.data);
 
   };
 
+  const fetchBanks = async ()=>{
+  const res = await api.get("/banks");
+  setBanks(res.data);
+};
+
+const fetchContractors = async ()=>{
+  const res = await api.get("/contractors");
+  setContractors(res.data);
+};
+
   useEffect(() => {
     fetchTransactions();
-  }, []);
+    fetchBanks();
+    fetchContractors();
+  }, [location.state]);
 
   const handleEdit = (record:any) => {
 
@@ -65,6 +86,14 @@ const [editRecord,setEditRecord] = useState<any>(null);
 
     setOpen(false);
     fetchTransactions();
+
+    };
+
+    const handleDelete = async (id:number)=>{
+
+      await api.delete(`/transactions/${id}`);
+
+      fetchTransactions();
 
     };
 
@@ -121,9 +150,31 @@ const [editRecord,setEditRecord] = useState<any>(null);
     {
       title: "Action",
       render: (_:any, record:any) => (
-        <Button type="primary" onClick={()=>handleEdit(record)}>
-          Edit
-        </Button>
+
+        <>
+          <Button
+            type="primary"
+            style={{ marginRight: 8 }}
+            onClick={()=>handleEdit(record)}
+          >
+            Edit
+          </Button>
+
+          <Popconfirm
+            title="Are you sure to delete this transaction?"
+            onConfirm={()=>handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+
+            <Button danger>
+              Delete
+            </Button>
+
+          </Popconfirm>
+
+        </>
+
       )
     }
 
@@ -133,7 +184,41 @@ const [editRecord,setEditRecord] = useState<any>(null);
 
     <Card title="Payment List">
 
-      <Row gutter={16} style={{ marginBottom: 20 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+
+        <Col span={6}>
+          <Select
+            placeholder="Select Bank"
+            style={{width:"100%"}}
+            allowClear
+            onChange={(value)=>setBankId(value)}
+          >
+
+            {banks.map((bank:any)=>(
+              <Option key={bank.id} value={bank.id}>
+                {bank.bank_name}
+              </Option>
+            ))}
+
+          </Select>
+        </Col>
+
+        <Col span={6}>
+          <Select
+            placeholder="Select Contractor"
+            style={{width:"100%"}}
+            allowClear
+            onChange={(value)=>setContractorId(value)}
+          >
+
+            {contractors.map((c:any)=>(
+              <Option key={c.id} value={c.id}>
+                {c.name}
+              </Option>
+            ))}
+
+          </Select>
+        </Col>
 
         <Col span={6}>
           <Select
@@ -169,6 +254,8 @@ const [editRecord,setEditRecord] = useState<any>(null);
 
         <Col span={6}>
           <Input
+            type="number"
+            min="0"
             placeholder="Amount"
             onChange={(e)=>setAmount(e.target.value)}
           />

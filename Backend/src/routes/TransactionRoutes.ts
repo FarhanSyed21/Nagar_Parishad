@@ -46,7 +46,7 @@ router.get("/", async (req, res) => {
 
   try {
 
-    const { type, amount, fromDate, toDate } = req.query;
+    const { type, amount, fromDate, toDate, bankId, contractorId } = req.query;
 
     let query = `
       SELECT 
@@ -58,7 +58,9 @@ router.get("/", async (req, res) => {
         t.particular,
         t.remark,
         b.bank_name,
-        c.name as contractor_name
+        c.name as contractor_name,
+        t.bank_id,
+        t.contractor_id
       FROM transactions t
       LEFT JOIN bank_accounts b ON t.bank_id = b.id
       LEFT JOIN contractors c ON t.contractor_id = c.id
@@ -86,6 +88,17 @@ router.get("/", async (req, res) => {
       params.push(toDate);
       query += ` AND t.transaction_date <= $${params.length}`;
     }
+
+    if (bankId) {
+      params.push(bankId);
+      query += ` AND t.bank_id = $${params.length}`;
+    }
+
+    if (contractorId) {
+      params.push(contractorId);
+      query += ` AND t.contractor_id = $${params.length}`;
+    }
+
 
     query += ` ORDER BY t.id ASC`;
 
@@ -129,6 +142,28 @@ router.put("/:id", async (req, res) => {
     );
 
     res.json(result.rows[0]);
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+
+  }
+
+});
+
+router.delete("/:id", async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    await pool.query(
+      "DELETE FROM transactions WHERE id=$1",
+      [id]
+    );
+
+    res.json({ message: "Transaction deleted" });
 
   } catch (error) {
 

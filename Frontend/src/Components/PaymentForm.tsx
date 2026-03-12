@@ -1,6 +1,7 @@
 import { Card, Form, Input, Select, DatePicker, Button } from "antd";
 import { useEffect, useState } from "react";
 import api from "../Services/Api";
+import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -8,7 +9,9 @@ interface Props {
   mode: "credit" | "debit";
 }
 
+
 export default function PaymentForm({ mode }: Props) {
+    const navigate = useNavigate();
 
   const [form] = Form.useForm();
 
@@ -32,14 +35,23 @@ export default function PaymentForm({ mode }: Props) {
 
   const handleSubmit = async (values: any) => {
 
-    const payload = {
-      ...values,
-      account_type: mode === "credit" ? "Credit" : "Debit"
-    };
+    // const payload = {
+    //   ...values,
+    //   account_type: mode === "credit" ? "Credit" : "Debit"
+    // };
 
-    await api.post("/transactions", payload);
+    // await api.post("/transactions", payload);
 
-    form.resetFields();
+    // form.resetFields();
+
+    await api.post("/transactions",{
+    ...values,
+    transaction_date: values.transaction_date.format("YYYY-MM-DD")
+  });
+
+  form.resetFields();
+
+  navigate("/payments", { state: { refresh: true } });
   };
 
   return (
@@ -143,6 +155,13 @@ export default function PaymentForm({ mode }: Props) {
         <Form.Item
           label="Amount"
           name="amount"
+          rules={[
+            { required: true, message: "Enter amount" },
+            {
+            pattern: /^[0-9]+$/,
+            message: "Amount must be numeric"
+            }
+        ]}
         >
           <Input />
         </Form.Item>
