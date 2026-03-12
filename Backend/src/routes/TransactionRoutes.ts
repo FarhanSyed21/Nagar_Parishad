@@ -60,7 +60,7 @@ router.get("/", async (req, res) => {
         b.bank_name,
         c.name as contractor_name
       FROM transactions t
-      LEFT JOIN banks b ON t.bank_id = b.id
+      LEFT JOIN bank_accounts b ON t.bank_id = b.id
       LEFT JOIN contractors c ON t.contractor_id = c.id
       WHERE 1=1
     `;
