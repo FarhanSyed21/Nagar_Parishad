@@ -21,14 +21,22 @@ export default function MainLayout({ children }: any) {
         { label: "Contractors", key: "/contractors" }
       ]
     },
+    {
+      label: "Salary",
+      key: "salary",
+      children: [
+        { label: "Employee", key: "/employee" },
+        
+      ]
+    },
 
     {
       label: "Transaction",
       key: "transaction",
       children: [
-        { label: "Payment Credit", key: "/payment-credit" },
-        { label: "Payment Debit", key: "/payment-debit" },
-        { label: "Payment List", key: "/payments" }
+        { label: "Payment Credit", key: "/payment-paid" },
+        { label: "Payment Deposit", key: "/payment-deposit" },
+        { label: "Payment List", key: "/transactions" }
       ]
     },
 
@@ -69,7 +77,7 @@ export default function MainLayout({ children }: any) {
           fontWeight:"bold",
           marginRight:"30px"
         }}>
-          Nagar Parishad
+          Nagar Parishad Nashirabad 
         </div>
 
         <Menu
