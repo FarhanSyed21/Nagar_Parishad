@@ -42,4 +42,36 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+
+  try {
+
+    const result = await pool.query(`
+      SELECT 
+        t.id,
+        t.transaction_date,
+        t.transaction_type,
+        t.amount,
+        t.account_type,
+        t.particular,
+        t.remark,
+        b.bank_name,
+        c.name as contractor_name
+      FROM transactions t
+      LEFT JOIN banks b ON t.bank_id = b.id
+      LEFT JOIN contractors c ON t.contractor_id = c.id
+      ORDER BY t.id DESC
+    `);
+
+    res.json(result.rows);
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+
+  }
+
+});
+
 export default router;

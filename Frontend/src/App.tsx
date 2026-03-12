@@ -8,6 +8,7 @@ import Banks from "./Pages/Banks";
 import PaymentCredit from "./Pages/PaymentCredit";
 import PaymentDebit from "./Pages/PaymentDebit";
 import MainLayout from "./Layout/MainLayout";
+import PaymentList from "./Pages/PaymentList";
 
 function App() {
 
@@ -73,6 +74,17 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <PaymentList />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
 
       </Routes>
 
